@@ -399,12 +399,26 @@ export default function App() {
     <div className="app-container">
       {/* Sidebar navigation bar */}
       <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}>
-        <div className="sidebar-brand">
-          <Sparkles size={22} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
-          <div>
-            <span>RatePulse</span>
-            <span className="sidebar-brand-desc">CRS Revenue Dash</span>
+        <div className="sidebar-brand" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Sparkles size={22} style={{ color: 'var(--primary-color)', flexShrink: 0 }} />
+            {!sidebarCollapsed && (
+              <div>
+                <span>RatePulse</span>
+                <span className="sidebar-brand-desc">CRS Revenue Dash</span>
+              </div>
+            )}
           </div>
+          {!sidebarCollapsed && (
+            <button 
+              onClick={() => setSidebarCollapsed(true)}
+              className="theme-toggle"
+              style={{ color: '#94a3b8', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
+              title="Close Sidebar"
+            >
+              <ChevronLeft size={18} />
+            </button>
+          )}
         </div>
 
         <nav className="sidebar-menu">
