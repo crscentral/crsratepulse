@@ -105,7 +105,7 @@ export default function RateComparisonView({ activeProperty, convert, currencySy
             <table className="data-table">
               <thead>
                 <tr>
-                  <th style={{ minWidth: '180px', position: 'sticky', left: 0, backgroundColor: 'var(--bg-card)', zIndex: 1 }}>Hotel Property</th>
+                  <th style={{ minWidth: '180px', position: 'sticky', left: 0, backgroundColor: 'var(--bg-card)', zIndex: 3 }}>Hotel Property</th>
                   {channels.map(ch => (
                     <th key={ch} style={{ textPosition: 'center', minWidth: '120px' }}>
                       <span className="tag-ota" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
@@ -120,8 +120,8 @@ export default function RateComparisonView({ activeProperty, convert, currencySy
               </thead>
               <tbody>
                 {/* Your Property Row */}
-                <tr style={{ backgroundColor: 'rgba(59, 130, 246, 0.05)', fontWeight: 600 }}>
-                  <td style={{ position: 'sticky', left: 0, backgroundColor: 'rgba(59, 130, 246, 0.05)', zIndex: 1 }}>
+                <tr style={{ backgroundColor: 'var(--bg-focus-row)', fontWeight: 600 }}>
+                  <td style={{ position: 'sticky', left: 0, backgroundColor: 'var(--bg-focus-row)', zIndex: 2 }}>
                     <div style={{ color: 'var(--primary-color)' }}>★ {comparison.property.name}</div>
                     <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Your Property
@@ -144,7 +144,7 @@ export default function RateComparisonView({ activeProperty, convert, currencySy
                 ) : (
                   comparison.competitors.map(comp => (
                     <tr key={comp.name}>
-                      <td style={{ fontWeight: 500, position: 'sticky', left: 0, backgroundColor: 'var(--bg-card)', zIndex: 1 }}>{comp.name}</td>
+                      <td style={{ fontWeight: 500, position: 'sticky', left: 0, backgroundColor: 'var(--bg-card)', zIndex: 2 }}>{comp.name}</td>
                       {channels.map(ch => (
                         <td key={ch} style={{ textAlign: 'center' }}>
                           <div style={{ fontWeight: 600 }}>

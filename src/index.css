@@ -22,6 +22,7 @@
   --status-warning-bg: rgba(245, 158, 11, 0.1);
   --status-critical: #ef4444; /* Red */
   --status-critical-bg: rgba(239, 68, 68, 0.1);
+  --bg-focus-row: #eff6ff; /* Opaque highlight blue */
   
   /* Fonts */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -54,6 +55,7 @@
   --status-ok-bg: rgba(16, 185, 129, 0.15);
   --status-warning-bg: rgba(245, 158, 11, 0.15);
   --status-critical-bg: rgba(239, 68, 68, 0.15);
+  --bg-focus-row: #1e293b; /* Opaque slate blue */
 }
 
 * {
