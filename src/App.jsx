@@ -69,7 +69,10 @@ export default function App() {
   };
 
   // Sandbox/Mock Mode toggles
-  const [useMockMode, setUseMockMode] = useState(true); // default to mock mode for easy preview
+  const [useMockMode, setUseMockMode] = useState(() => {
+    const val = localStorage.getItem('rp_use_mock_mode');
+    return val !== 'false'; // defaults to true
+  });
   const [mockProfiles, setMockProfiles] = useState([
     {
       id: 'mock-admin-id',
@@ -138,9 +141,18 @@ export default function App() {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
-  // Live session sync
+  // Live session sync & mock session restore
   useEffect(() => {
     if (useMockMode) {
+      const storedUser = localStorage.getItem('rp_mock_session_user');
+      const storedProfile = localStorage.getItem('rp_mock_user_profile');
+      if (storedUser && storedProfile) {
+        setSessionUser(JSON.parse(storedUser));
+        setUserProfile(JSON.parse(storedProfile));
+      } else {
+        setSessionUser(null);
+        setUserProfile(null);
+      }
       setAuthLoading(false);
       return;
     }
@@ -151,6 +163,8 @@ export default function App() {
         setSessionUser(session.user);
         fetchUserProfile(session.user.id);
       } else {
+        setSessionUser(null);
+        setUserProfile(null);
         setAuthLoading(false);
       }
     });
@@ -191,10 +205,16 @@ export default function App() {
   const handleAuthSuccess = (user, profile) => {
     setSessionUser(user);
     setUserProfile(profile);
+    if (useMockMode) {
+      localStorage.setItem('rp_mock_session_user', JSON.stringify(user));
+      localStorage.setItem('rp_mock_user_profile', JSON.stringify(profile));
+    }
   };
 
   const handleSignOut = async () => {
     if (useMockMode) {
+      localStorage.removeItem('rp_mock_session_user');
+      localStorage.removeItem('rp_mock_user_profile');
       setSessionUser(null);
       setUserProfile(null);
       setActiveView('dashboard');
@@ -215,7 +235,11 @@ export default function App() {
 
     // Update active logged in user profile if it changed
     if (userProfile && userProfile.id === id) {
-      setUserProfile(prev => ({ ...prev, ...updates }));
+      setUserProfile(prev => {
+        const next = { ...prev, ...updates };
+        localStorage.setItem('rp_mock_user_profile', JSON.stringify(next));
+        return next;
+      });
     }
   };
 
