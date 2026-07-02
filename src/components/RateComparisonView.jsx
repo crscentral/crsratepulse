@@ -129,7 +129,18 @@ export default function RateComparisonView({ activeProperty, convert, currencySy
                   </td>
                   {channels.map(ch => (
                     <td key={ch} style={{ textAlign: 'center', fontWeight: 700 }}>
-                      {comparison.property.rates[ch] ? `${currencySymbol}${convert(comparison.property.rates[ch], activeProperty.currency)}` : 'N/A'}
+                      {comparison.property.rates[ch] ? (
+                        <a
+                          href={ratesService.getBookingUrl(comparison.property.name, ch)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="rate-link"
+                          style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dashed var(--text-muted)' }}
+                          title={`View on ${ch}`}
+                        >
+                          {`${currencySymbol}${convert(comparison.property.rates[ch], activeProperty.currency)}`}
+                        </a>
+                      ) : 'N/A'}
                     </td>
                   ))}
                 </tr>
@@ -148,7 +159,18 @@ export default function RateComparisonView({ activeProperty, convert, currencySy
                       {channels.map(ch => (
                         <td key={ch} style={{ textAlign: 'center' }}>
                           <div style={{ fontWeight: 600 }}>
-                            {comp.rates[ch]?.rate ? `${currencySymbol}${convert(comp.rates[ch].rate, activeProperty.currency)}` : 'N/A'}
+                            {comp.rates[ch]?.rate ? (
+                              <a
+                                href={ratesService.getBookingUrl(comp.name, ch)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="rate-link"
+                                style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dashed var(--text-muted)' }}
+                                title={`View on ${ch}`}
+                              >
+                                {`${currencySymbol}${convert(comp.rates[ch].rate, activeProperty.currency)}`}
+                              </a>
+                            ) : 'N/A'}
                           </div>
                           {comp.rates[ch]?.rate ? renderDelta(convert(comp.rates[ch].delta, activeProperty.currency), currencySymbol) : null}
                         </td>

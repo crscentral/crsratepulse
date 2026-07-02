@@ -481,7 +481,16 @@ export default function DashboardView({ activeProperty, onViewChange, onProperty
                   </div>
 
                   <div style={{ width: '50px', textAlign: 'right', fontWeight: 700, fontSize: '13px' }}>
-                    {convert(item.rate, activeProperty?.currency)}
+                    <a 
+                      href={ratesService.getBookingUrl(activeProperty.name, item.channel)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rate-link"
+                      style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dashed var(--text-muted)' }}
+                      title={`View on ${item.channel}`}
+                    >
+                      {convert(item.rate, activeProperty?.currency)}
+                    </a>
                   </div>
 
                   <div style={{ width: '70px', textAlign: 'right' }}>

@@ -462,6 +462,72 @@ export const ratesService = {
     const rateInUSD = amount / (exchangeRates[fromCurrency] || 1.0);
     const converted = rateInUSD * (exchangeRates[toCurrency] || 1.0);
     return Math.round(converted);
+  },
+
+  // Get dynamic OTA booking search URL helper
+  getBookingUrl: (hotelName, channelName) => {
+    const q = encodeURIComponent(hotelName);
+    const cleanCh = channelName.toLowerCase();
+    
+    if (cleanCh.includes('website') || cleanCh.includes('direct')) {
+      return `https://www.google.com/search?q=${q}+official+website`;
+    }
+    if (cleanCh.includes('agoda')) {
+      return `https://www.agoda.com/search?q=${q}`;
+    }
+    if (cleanCh.includes('booking')) {
+      return `https://www.booking.com/searchresults.html?ss=${q}`;
+    }
+    if (cleanCh.includes('trip.com') || cleanCh === 'trip') {
+      return `https://www.trip.com/hotels/list?keyword=${q}`;
+    }
+    if (cleanCh.includes('expedia')) {
+      return `https://www.expedia.com/Hotel-Search?destination=${q}`;
+    }
+    if (cleanCh.includes('traveloka')) {
+      return `https://www.traveloka.com/en-th/hotel/search?txt=${q}`;
+    }
+    if (cleanCh.includes('makemytrip')) {
+      return `https://www.makemytrip.com/hotels/hotel-listing/?searchText=${q}`;
+    }
+    if (cleanCh.includes('airbnb')) {
+      return `https://www.airbnb.com/s/${q}/homes`;
+    }
+    if (cleanCh.includes('hrs')) {
+      return `https://www.hrs.com/web3/search?query=${q}`;
+    }
+    if (cleanCh.includes('trivago')) {
+      return `https://www.trivago.com/en-US/s/search?query=${q}`;
+    }
+    if (cleanCh.includes('tripadvisor')) {
+      return `https://www.tripadvisor.com/Search?q=${q}`;
+    }
+    if (cleanCh.includes('lastminute')) {
+      return `https://www.lastminute.com/search?q=${q}`;
+    }
+    if (cleanCh.includes('skyscanner') || cleanCh.includes('skyscaner')) {
+      return `https://www.skyscanner.com/hotels/search?q=${q}`;
+    }
+    if (cleanCh.includes('bluepillow')) {
+      return `https://www.bluepillow.com/search?q=${q}`;
+    }
+    if (cleanCh.includes('cleartrip')) {
+      return `https://www.cleartrip.com/hotels/results?search=${q}`;
+    }
+    if (cleanCh.includes('priceline')) {
+      return `https://www.priceline.com/re/hotels/search/list/${q}`;
+    }
+    if (cleanCh.includes('vio')) {
+      return `https://www.vio.com/search?q=${q}`;
+    }
+    if (cleanCh.includes('hutchgo')) {
+      return `https://www.hutchgo.com.hk/en/search?q=${q}`;
+    }
+    if (cleanCh.includes('klook')) {
+      return `https://www.klook.com/en-US/search/result/?query=${q}`;
+    }
+    
+    return `https://www.google.com/search?q=${q}+${encodeURIComponent(channelName)}`;
   }
 };
 

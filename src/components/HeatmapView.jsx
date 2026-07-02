@@ -241,15 +241,24 @@ export default function HeatmapView({ activeProperty, convert, currencySymbol, s
                           }}
                         >
                           {rate ? (
-                            <div 
-                              style={{ 
-                                ...getCellColorStyle(rate),
-                                padding: '6px',
-                                borderRadius: '4px'
-                              }}
+                            <a
+                              href={ratesService.getBookingUrl(row.name, ch)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: 'inherit', textDecoration: 'none' }}
+                              title={`View ${row.name} on ${ch}`}
                             >
-                              {convert(rate, activeProperty?.currency)}
-                            </div>
+                              <div 
+                                style={{ 
+                                  ...getCellColorStyle(rate),
+                                  padding: '6px',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                {convert(rate, activeProperty?.currency)}
+                              </div>
+                            </a>
                           ) : (
                             <span style={{ color: 'var(--text-muted)' }}>-</span>
                           )}

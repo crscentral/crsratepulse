@@ -128,10 +128,28 @@ export default function RateParityView({ activeProperty, onViewChange, convert, 
                     </td>
                     <td style={{ fontWeight: 500 }}>{violation.roomType}</td>
                     <td>
-                      {currencySymbol}{convert(violation.directRate, activeProperty.currency)}
+                      <a
+                        href={ratesService.getBookingUrl(activeProperty.name, 'Hotel Website')}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rate-link"
+                        style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dashed var(--text-muted)' }}
+                        title="View direct website price"
+                      >
+                        {currencySymbol}{convert(violation.directRate, activeProperty.currency)}
+                      </a>
                     </td>
                     <td style={{ fontWeight: 600, color: 'var(--status-critical)' }}>
-                      {currencySymbol}{convert(violation.otaRate, activeProperty.currency)}
+                      <a
+                        href={ratesService.getBookingUrl(activeProperty.name, violation.channel)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rate-link"
+                        style={{ color: 'inherit', textDecoration: 'none', borderBottom: '1px dashed var(--text-muted)' }}
+                        title={`View on ${violation.channel}`}
+                      >
+                        {currencySymbol}{convert(violation.otaRate, activeProperty.currency)}
+                      </a>
                     </td>
                     <td>
                       {currencySymbol}{convert(violation.difference, activeProperty.currency)}
