@@ -223,7 +223,7 @@ export default function DashboardView({ activeProperty, onViewChange, onProperty
           </div>
         </div>
 
-        <form onSubmit={handleSearch} style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end' }}>
+        <form onSubmit={handleSearch} className="search-form" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end' }}>
           <div style={{ flex: 2, minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>HOTEL NAME</span>
             <div style={{ position: 'relative' }}>
