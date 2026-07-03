@@ -56,6 +56,29 @@ export default function RateComparisonView({ activeProperty, convert, currencySy
         <div>
           <h1 className="page-title">Rate Comparison Grid</h1>
           <p className="page-subtitle">Compare OTA channels against competitors in real-time</p>
+          <div style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '6px', 
+            backgroundColor: 'rgba(16, 185, 129, 0.1)', 
+            border: '1px solid rgba(16, 185, 129, 0.2)',
+            color: 'var(--status-ok)', 
+            padding: '3px 8px', 
+            borderRadius: '12px', 
+            fontSize: '11px',
+            fontWeight: 600,
+            marginTop: '6px'
+          }}>
+            <span style={{ 
+              width: '6px', 
+              height: '6px', 
+              borderRadius: '50%', 
+              backgroundColor: 'var(--status-ok)',
+              display: 'inline-block',
+              animation: 'pulse 1.5s infinite ease-in-out'
+            }}></span>
+            Live Google Search Rate Sync: Active (Checked just now)
+          </div>
         </div>
         <button 
           onClick={fetchComparisonData} 

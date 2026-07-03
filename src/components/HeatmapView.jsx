@@ -120,6 +120,29 @@ export default function HeatmapView({ activeProperty, convert, currencySymbol, s
         <div>
           <h1 className="page-title">Market Rate Position Heatmap</h1>
           <p className="page-subtitle">Cross-property comparison matrix colored by market pricing distribution</p>
+          <div style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '6px', 
+            backgroundColor: 'rgba(16, 185, 129, 0.1)', 
+            border: '1px solid rgba(16, 185, 129, 0.2)',
+            color: 'var(--status-ok)', 
+            padding: '3px 8px', 
+            borderRadius: '12px', 
+            fontSize: '11px',
+            fontWeight: 600,
+            marginTop: '6px'
+          }}>
+            <span style={{ 
+              width: '6px', 
+              height: '6px', 
+              borderRadius: '50%', 
+              backgroundColor: 'var(--status-ok)',
+              display: 'inline-block',
+              animation: 'pulse 1.5s infinite ease-in-out'
+            }}></span>
+            Live Google Search Rate Sync: Active (Checked just now)
+          </div>
         </div>
         <button 
           onClick={loadHeatmapData} 

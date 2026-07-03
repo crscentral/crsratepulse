@@ -350,9 +350,16 @@ export default function App() {
         return (
           <PropertiesView 
             onPropertyCreated={(newProp) => {
-              setProperties(prev => [...prev, newProp]);
+              setProperties(prev => {
+                if (prev.find(p => p.id === newProp.id)) return prev;
+                return [...prev, newProp];
+              });
               setActiveProperty(newProp);
             }} 
+            onPropertyUpdated={(updatedProp) => {
+              setProperties(prev => prev.map(p => p.id === updatedProp.id ? updatedProp : p));
+              setActiveProperty(prev => prev && prev.id === updatedProp.id ? updatedProp : prev);
+            }}
             activePropertyId={activeProperty?.id}
             onSelectProperty={setActiveProperty}
           />

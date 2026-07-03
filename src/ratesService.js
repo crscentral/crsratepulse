@@ -68,8 +68,8 @@ const generateRateHistory = (properties) => {
   return history;
 };
 
-// Seed properties
-let properties = [
+// Default seed properties
+const defaultProperties = [
   {
     id: 'prop-azure',
     name: 'Azure Beach Resort',
@@ -102,6 +102,23 @@ let properties = [
     ]
   }
 ];
+
+// Initialize properties from localStorage if available
+let properties = (() => {
+  const stored = localStorage.getItem('rp_properties');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error('Error parsing stored properties:', e);
+    }
+  }
+  return defaultProperties;
+})();
+
+const savePropertiesToStorage = () => {
+  localStorage.setItem('rp_properties', JSON.stringify(properties));
+};
 
 // Initialize rate history
 let rateHistory = generateRateHistory(properties);
@@ -195,6 +212,38 @@ let recommendations = [
   }
 ];
 
+const getCurrencyFromLocation = (locationStr) => {
+  const loc = locationStr.toLowerCase();
+  if (loc.includes('thailand') || loc.includes('phuket') || loc.includes('bangkok')) return 'THB';
+  if (loc.includes('laos') || loc.includes('vientiane')) return 'LAK';
+  if (loc.includes('singapore')) return 'SGD';
+  if (loc.includes('india') || loc.includes('delhi') || loc.includes('mumbai')) return 'INR';
+  if (loc.includes('malaysia') || loc.includes('kuala lumpur')) return 'MYR';
+  if (loc.includes('vietnam') || loc.includes('hanoi')) return 'VND';
+  if (loc.includes('china') || loc.includes('beijing')) return 'CNY';
+  if (loc.includes('nepal') || loc.includes('kathmandu')) return 'NPR';
+  if (loc.includes('japan') || loc.includes('tokyo')) return 'JPY';
+  if (loc.includes('france') || loc.includes('germany') || loc.includes('italy') || loc.includes('spain') || loc.includes('europe')) return 'EUR';
+  return 'USD';
+};
+
+const getSymbolFromCurrency = (currency) => {
+  const symbols = {
+    USD: '$',
+    INR: '₹',
+    THB: '฿',
+    LAK: '₭',
+    EUR: '€',
+    SGD: 'S$',
+    MYR: 'RM',
+    VND: '₫',
+    CNY: '¥',
+    NPR: '₨',
+    JPY: '¥'
+  };
+  return symbols[currency] || '$';
+};
+
 export const ratesService = {
   // Get all properties
   getProperties: async () => {
@@ -212,6 +261,7 @@ export const ratesService = {
       ...property
     };
     properties.push(newProp);
+    savePropertiesToStorage();
     // Generate rate history for the new property
     const newHistory = generateRateHistory([newProp]);
     rateHistory = { ...rateHistory, ...newHistory };
@@ -223,12 +273,13 @@ export const ratesService = {
     const propIndex = properties.findIndex(p => p.id === propertyId);
     if (propIndex !== -1) {
       properties[propIndex].competitors = competitorsList;
+      savePropertiesToStorage();
       // Regenerate rate history to reflect new competitor list
       const singleHistory = generateRateHistory([properties[propIndex]]);
       rateHistory[propertyId] = singleHistory[propertyId];
-      return true;
+      return properties[propIndex];
     }
-    return false;
+    return null;
   },
 
   // Get rates history for trailing 14 days
@@ -375,26 +426,51 @@ export const ratesService = {
     return true;
   },
 
-  // Search worldwide hotels database (Mock API)
+  // Search worldwide hotels database (Live Nominatim API)
   searchWorldwideHotels: async (query, location) => {
-    const db = [
-      { name: 'Marina Bay Sands', location: 'Singapore', rooms: 2560, rating: 9.0, avgRate: 524, currency: 'SGD' },
-      { name: 'Raffles Hotel', location: 'Singapore', rooms: 115, rating: 9.4, avgRate: 673, currency: 'SGD' },
-      { name: 'Fullerton Hotel', location: 'Singapore', rooms: 400, rating: 9.1, avgRate: 427, currency: 'SGD' },
-      { name: 'Shangri-La Singapore', location: 'Singapore', rooms: 792, rating: 8.9, avgRate: 347, currency: 'SGD' },
-      { name: 'Pan Pacific Singapore', location: 'Singapore', rooms: 790, rating: 8.7, avgRate: 307, currency: 'SGD' },
-      { name: 'Burj Al Arab Jumeirah', location: 'Dubai, UAE', rooms: 202, rating: 9.8, avgRate: 1200, currency: 'USD' },
-      { name: 'The Plaza New York', location: 'New York, USA', rooms: 282, rating: 9.3, avgRate: 750, currency: 'USD' },
-      { name: 'Bellagio Las Vegas', location: 'Las Vegas, USA', rooms: 3933, rating: 9.0, avgRate: 280, currency: 'USD' },
-      { name: 'The Savoy London', location: 'London, UK', rooms: 268, rating: 9.4, avgRate: 580, currency: 'USD' },
-      { name: 'Mandarin Oriental Bangkok', location: 'Bangkok, Thailand', rooms: 324, rating: 9.6, avgRate: 450, currency: 'USD' }
-    ];
+    try {
+      const searchTerms = [query, location].filter(x => x && x.trim().length > 0).join(' ');
+      if (!searchTerms.trim()) return [];
 
-    return db.filter(h => {
-      const matchName = !query || h.name.toLowerCase().includes(query.toLowerCase());
-      const matchLoc = !location || h.location.toLowerCase().includes(location.toLowerCase());
-      return matchName && matchLoc;
-    });
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchTerms + ' hotel')}&limit=12&addressdetails=1`;
+      const response = await fetch(url, {
+        headers: { 'Accept-Language': 'en' }
+      });
+      if (!response.ok) return [];
+      const data = await response.json();
+
+      return data.map((item, idx) => {
+        const address = item.address || {};
+        const name = address.hotel || address.tourism || address.amenity || address.house_name || item.display_name.split(',')[0];
+        
+        // Extract location details
+        const city = address.city || address.town || address.municipality || address.state || '';
+        const country = address.country || '';
+        const locationStr = [city, country].filter(x => x.length > 0).join(', ');
+
+        const currency = getCurrencyFromLocation(locationStr);
+        
+        // Deterministic base average rate based on name hash for consistency
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+          hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const baseRateVal = Math.abs(hash % 400) + 60; // Rate between $60 and $460
+
+        return {
+          id: `live-${item.place_id || idx}`,
+          name: name,
+          location: locationStr || 'Global',
+          rooms: Math.abs(hash % 200) + 15, // Rooms count between 15 and 215
+          rating: ((Math.abs(hash % 15) / 10) + 8.2).toFixed(1), // Rating between 8.2 and 9.7
+          avgRate: baseRateVal,
+          currency: currency
+        };
+      });
+    } catch (err) {
+      console.error('Error fetching live hotels from Nominatim:', err);
+      return [];
+    }
   },
 
   // Import a hotel from worldwide database into My Properties
@@ -403,18 +479,20 @@ export const ratesService = {
     const exists = properties.find(p => p.name.toLowerCase() === hotel.name.toLowerCase());
     if (exists) return exists;
 
+    const currency = hotel.currency || 'USD';
     const newProp = {
       id: `prop-${Date.now()}`,
       name: hotel.name,
       location: hotel.location,
       rooms: hotel.rooms || 50,
-      currency: hotel.currency || 'USD',
-      currencySymbol: hotel.currency === 'SGD' ? 'S$' : hotel.currency === 'THB' ? '฿' : '$',
+      currency: currency,
+      currencySymbol: getSymbolFromCurrency(currency),
       roomTypes: ['Deluxe Room', 'Premium Suite', 'Heritage Villa'],
       competitors: ['Lagoon Vista Resort', 'Andaman Breeze', 'Siam Sands'] // default competitor set
     };
     
     properties.push(newProp);
+    savePropertiesToStorage();
     
     // Generate rates history for the imported hotel
     const newHistory = generateRateHistory([newProp]);
@@ -462,6 +540,43 @@ export const ratesService = {
     const rateInUSD = amount / (exchangeRates[fromCurrency] || 1.0);
     const converted = rateInUSD * (exchangeRates[toCurrency] || 1.0);
     return Math.round(converted);
+  },
+
+  // Get live suggestions from OpenStreetMap Nominatim (simulating Google Search API)
+  getLiveSuggestions: async (query, type) => {
+    if (!query || query.length < 3) return [];
+    try {
+      const isLocation = type === 'location';
+      const searchQuery = isLocation ? query : `${query} hotel`;
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&limit=8&addressdetails=1`;
+      
+      const response = await fetch(url, {
+        headers: { 'Accept-Language': 'en' }
+      });
+      if (!response.ok) return [];
+      const data = await response.json();
+      
+      return data.map(item => {
+        const address = item.address || {};
+        const name = address.hotel || address.tourism || address.amenity || address.house_name || item.display_name.split(',')[0];
+        
+        const city = address.city || address.town || address.municipality || address.state || '';
+        const country = address.country || '';
+        const locationStr = [city, country].filter(x => x.length > 0).join(', ');
+        
+        return {
+          name: name,
+          displayName: item.display_name,
+          location: locationStr || 'Global',
+          lat: item.lat,
+          lon: item.lon,
+          type: item.type
+        };
+      });
+    } catch (err) {
+      console.error('Error fetching live suggestions:', err);
+      return [];
+    }
   },
 
   // Get dynamic OTA booking search URL helper

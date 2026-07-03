@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ratesService } from '../ratesService';
 import { Home, MapPin, BedDouble, Users, Plus, X, PlusCircle } from 'lucide-react';
 
-export default function PropertiesView({ onPropertyCreated, activePropertyId, onSelectProperty }) {
+export default function PropertiesView({ onPropertyCreated, activePropertyId, onSelectProperty, onPropertyUpdated }) {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   
@@ -39,10 +39,15 @@ export default function PropertiesView({ onPropertyCreated, activePropertyId, on
 
     const prop = properties.find(p => p.id === propId);
     if (prop) {
+      if (prop.competitors.length >= 20) {
+        alert("Maximum limit of 20 competitor benchmark hotels reached.");
+        return;
+      }
       const updatedComps = [...prop.competitors, newCompetitorName.trim()];
-      await ratesService.updateCompetitors(propId, updatedComps);
+      const updated = await ratesService.updateCompetitors(propId, updatedComps);
       setNewCompetitorName('');
       loadProperties();
+      if (onPropertyUpdated && updated) onPropertyUpdated(updated);
     }
   };
 
@@ -50,8 +55,9 @@ export default function PropertiesView({ onPropertyCreated, activePropertyId, on
     const prop = properties.find(p => p.id === propId);
     if (prop) {
       const updatedComps = prop.competitors.filter(c => c !== compName);
-      await ratesService.updateCompetitors(propId, updatedComps);
+      const updated = await ratesService.updateCompetitors(propId, updatedComps);
       loadProperties();
+      if (onPropertyUpdated && updated) onPropertyUpdated(updated);
     }
   };
 

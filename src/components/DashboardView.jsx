@@ -40,6 +40,40 @@ export default function DashboardView({ activeProperty, onViewChange, onProperty
   const [importingId, setImportingId] = useState(null);
   const [importSuccessId, setImportSuccessId] = useState(null);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [querySuggestions, setQuerySuggestions] = useState([]);
+  const [locationSuggestions, setLocationSuggestions] = useState([]);
+  const [showQueryDropdown, setShowQueryDropdown] = useState(false);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+
+  // Debounced live suggestions for Hotel name
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim().length < 3) {
+      setQuerySuggestions([]);
+      setShowQueryDropdown(false);
+      return;
+    }
+    const delay = setTimeout(async () => {
+      const list = await ratesService.getLiveSuggestions(searchQuery, 'hotel');
+      setQuerySuggestions(list);
+      setShowQueryDropdown(list.length > 0);
+    }, 300); // 300ms debounce
+    return () => clearTimeout(delay);
+  }, [searchQuery]);
+
+  // Debounced live suggestions for Location
+  useEffect(() => {
+    if (!searchLocation || searchLocation.trim().length < 3) {
+      setLocationSuggestions([]);
+      setShowLocationDropdown(false);
+      return;
+    }
+    const delay = setTimeout(async () => {
+      const list = await ratesService.getLiveSuggestions(searchLocation, 'location');
+      setLocationSuggestions(list);
+      setShowLocationDropdown(list.length > 0);
+    }, 300); // 300ms debounce
+    return () => clearTimeout(delay);
+  }, [searchLocation]);
   
   // Dynamic metrics
   const [myLatestRate, setMyLatestRate] = useState(0);
@@ -235,7 +269,53 @@ export default function DashboardView({ activeProperty, onViewChange, onProperty
                 style={{ paddingLeft: '34px', width: '100%', fontSize: '13px' }}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setShowQueryDropdown(querySuggestions.length > 0)}
+                onBlur={() => setTimeout(() => setShowQueryDropdown(false), 200)}
               />
+
+              {showQueryDropdown && querySuggestions.length > 0 && (
+                <div 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '42px', 
+                    left: 0, 
+                    width: '100%', 
+                    backgroundColor: 'var(--bg-card)', 
+                    border: '1px solid var(--border-color)', 
+                    borderRadius: 'var(--radius-sm)', 
+                    boxShadow: 'var(--shadow-lg)', 
+                    zIndex: 100, 
+                    maxHeight: '220px', 
+                    overflowY: 'auto' 
+                  }}
+                >
+                  {querySuggestions.map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => {
+                        setSearchQuery(item.name);
+                        if (item.location && item.location !== 'Global') {
+                          setSearchLocation(item.location);
+                        }
+                        setShowQueryDropdown(false);
+                      }}
+                      style={{ 
+                        padding: '8px 12px', 
+                        cursor: 'pointer', 
+                        borderBottom: '1px solid var(--border-color)',
+                        fontSize: '12px',
+                        color: 'var(--text-primary)',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--bg-app)'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      <strong style={{ color: 'var(--primary-color)' }}>{item.name}</strong>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '10px', marginTop: '2px' }}>{item.displayName}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -250,7 +330,50 @@ export default function DashboardView({ activeProperty, onViewChange, onProperty
                 style={{ paddingLeft: '34px', width: '100%', fontSize: '13px' }}
                 value={searchLocation}
                 onChange={(e) => setSearchLocation(e.target.value)}
+                onFocus={() => setShowLocationDropdown(locationSuggestions.length > 0)}
+                onBlur={() => setTimeout(() => setShowLocationDropdown(false), 200)}
               />
+
+              {showLocationDropdown && locationSuggestions.length > 0 && (
+                <div 
+                  style={{ 
+                    position: 'absolute', 
+                    top: '42px', 
+                    left: 0, 
+                    width: '100%', 
+                    backgroundColor: 'var(--bg-card)', 
+                    border: '1px solid var(--border-color)', 
+                    borderRadius: 'var(--radius-sm)', 
+                    boxShadow: 'var(--shadow-lg)', 
+                    zIndex: 100, 
+                    maxHeight: '220px', 
+                    overflowY: 'auto' 
+                  }}
+                >
+                  {locationSuggestions.map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => {
+                        setSearchLocation(item.location !== 'Global' ? item.location : item.displayName.split(',')[0]);
+                        setShowLocationDropdown(false);
+                      }}
+                      style={{ 
+                        padding: '8px 12px', 
+                        cursor: 'pointer', 
+                        borderBottom: '1px solid var(--border-color)',
+                        fontSize: '12px',
+                        color: 'var(--text-primary)',
+                        textAlign: 'left'
+                      }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = 'var(--bg-app)'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                    >
+                      <strong>{item.displayName.split(',')[0]}</strong>
+                      <div style={{ color: 'var(--text-secondary)', fontSize: '10px', marginTop: '2px' }}>{item.displayName}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
